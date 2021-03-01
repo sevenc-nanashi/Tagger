@@ -153,7 +153,7 @@ async def _find(ctx, name: str, show: bool = False):
     else:
         await ctx.send(res, hidden=not show)
         
-@slash.slash(name="new",
+@slash.slash(name="create",
              description="新しいタグを作成します。",
              options=[
                  manage_commands.create_option(name="Name",
@@ -162,7 +162,7 @@ async def _find(ctx, name: str, show: bool = False):
                                                required=True)
              ],
              guild_ids=guild_ids)
-async def _new(ctx, name: str):
+async def _create(ctx, name: str):
     if not ctx.author.guild_permissions.manage_channels:
         await ctx.respond(eat=True)
         return await ctx.send("チャンネルの管理権限が必要です。", hidden=True)
@@ -209,4 +209,17 @@ async def _delete(ctx, name: str):
     tag_list.remove(name)
     await ctx.send("タグを削除しました。", hidden=True)
 
+@slash.slash(name="info",
+             description="Botの情報を表示します。",
+             guild_ids=guild_ids)
+async def _info(ctx):
+    await ctx.respond(eat=True)
+    res = """
+このBotはIssueにタグをつけ、それから検索するBotです。
+
+GitHub: [sevenc-nanashi/Tagger](https://github.com/sevenc-nanashi/Tagger)
+Created by No Name.#1225
+    """
+    await ctx.send(res, hidden=True)
+    
 bot.run(os.getenv("token"))
