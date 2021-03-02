@@ -70,7 +70,7 @@ async def _add(ctx, name: str):
         pass
     topic, tags = get_tag(ctx.channel)
     before_tags = set(tags)
-    tags |= set(name.split(",")) & tag_list
+    tags |= {s.strip().lower() for s in name.split(",")} & tag_list
     tags = set(tags)
 
     try:
@@ -108,7 +108,7 @@ async def _remove(ctx, name: str):
     await ctx.respond(eat=False)
     topic, tags = get_tag(ctx.channel)
 
-    tags = set(tags) - set(name.split(","))
+    tags = set(tags) - {s.strip().lower() for s in name.split(",")}
 
     # await ctx.respond(eat=False)
     try:
@@ -141,9 +141,10 @@ async def _find(ctx, name: str, show: bool = False):
         pass
     issues = list(filter(is_issue, ctx.guild.text_channels))
     res = "> **当てはまったチャンネル**\n"
+    query = {s.strip().lower() for s in name.split(",")}
     for i in issues:
         _, tags = get_tag(i)
-        if set(name.split(",")) & tags != set(name.split(",")):
+        if query & tags != set(name.split(",")):
             continue
         bres = res
         res += i.mention + "\n"
@@ -169,7 +170,7 @@ async def _create(ctx, name: str):
         await ctx.respond(eat=True)
         return await ctx.send("チャンネルの管理権限が必要です。", hidden=True)
     await ctx.respond(eat=True)
-    tag_list.add(name)
+    tag_list.add(name.lower())
     db["tags"] = ",".join(tag_list)
     await ctx.send("タグを作成しました。", hidden=True)
 
