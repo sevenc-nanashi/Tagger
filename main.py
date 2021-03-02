@@ -64,26 +64,28 @@ async def _add(ctx, name: str):
     elif not set(name.split(",")) & tag_list:
         await ctx.respond(eat=True)
         return await ctx.send("タグが見つかりません。", hidden=True)
-        
-    await ctx.respond(eat=False)
+    try:
+        await ctx.respond(eat=False)
+    except discord.errors.NotFound:
+        pass
     topic, tags = get_tag(ctx.channel)
-    before_tags = tags
+    before_tags = set(tags)
     tags |= set(name.split(",")) & tag_list
-    tags = list(set(tags))
+    tags = set(tags)
 
     try:
         await asyncio.wait_for(
             ctx.channel.edit(topic=topic + "\n\nタグ: " + ", ".join(tags)), 5)
         added_tags = tags - before_tags
-        new_tags = "@ 現在のタグ\n"
+        new_tags = "*** 現在のタグ ***\n"
         for t in tags:
             if t in added_tags:
                 new_tags += "+ "
             new_tags += t + "\n"
-        new_tags += "@ 無視されたタグ\n"
-        for t in set(name.split(",")) - added_tags:
+        new_tags += "*** 存在しないため無視されたタグ ***\n"
+        for t in set(name.split(",")) - tag_list:
             new_tags += "- " + t + "\n"
-        await ctx.send(f'{len(set(name.split(",")) & tag_list)}個のタグを追加しました。\n```diff\n' + new_tags + "```", hidden=True)
+        await ctx.send(f'{len(added_tags)}個のタグを追加しました。\n```diff\n' + new_tags + "```", hidden=True)
     except asyncio.TimeoutError:
         await ctx.send("レート制限により、タグを追加できませんでした。", hidden=True)
 
